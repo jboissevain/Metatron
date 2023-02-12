@@ -1,11 +1,17 @@
 require('dotenv').config();
 const {Client, Collection, Events, GatewayIntentBits} = require('discord.js');
+const { Sequelize, DataTypes, Model } = require('sequelize');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages] });
 
 client.commands = new Collection();
+
+client.messages = new Collection();
+
+client.db = require('./database/database.js');
+client.db.syncModels();
 
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -21,23 +27,17 @@ for (const file of commandFiles) {
     }
 }
 
-client.once(Events.ClientReady, c => {
-    console.log(`Logged in as ${c.user.tag}`);
-});
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-client.on(Events.InteractionCreate, async interaction => {
-    if(!interaction.isChatInputCommand()) return;
-    const command = interaction.client.commands.get(interaction.commandName);
-
-    if(!command) return;
-
-    try {
-        await command.execute(interaction);
-    } catch(error) {
-        console.error(error);
-        await interaction.reply({content: 'there was an error executing this command', ephemeral: true});
-    }
-    console.log(interaction);
-})
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args, client));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args, client));
+	}
+}
 
 client.login(process.env.TOKEN);

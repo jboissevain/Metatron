@@ -14,9 +14,14 @@
         "discord.js": "^14.7.1",
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
-        "ngrok": "^4.3.3",
         "node": "^19.6.0",
-        "node-fetch": "^3.2.3"
+        "node-cron": "^3.0.2",
+        "node-fetch": "^3.2.3",
+        "pg": "^8.9.0",
+        "pg-hstore": "^2.3.4",
+        "postgres-date": "^2.1.0",
+        "sequelize": "^6.28.0",
+        "sqlite3": "^5.1.4"
     },
     "devDependencies": {
         "nodemon": "^2.0.15"
