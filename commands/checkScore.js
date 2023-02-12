@@ -7,6 +7,6 @@ module.exports = {
     async execute(interaction) {
         const user = await interaction.client.db.getUser(interaction.user.id);
 
-        interaction.reply(`User ${user.display_name} has an activity score of ${user.activity_score}`);
+        interaction.reply(`User ${user[0].dataValues.display_name} has an activity score of ${user[0].dataValues.activity_score}`);
     },
 };

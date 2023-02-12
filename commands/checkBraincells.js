@@ -7,6 +7,6 @@ module.exports = {
     async execute(interaction) {
         const user = await interaction.client.db.getUser(interaction.user.id);
 
-        return `User ${user.display_name} has lost ${user.braincells_lost} braincells`;
+        return `User ${user[0].dataValues.display_name} has lost ${user[0].dataValues.braincells_lost} braincells`;
     },
 };
