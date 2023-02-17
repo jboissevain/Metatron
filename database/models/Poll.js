@@ -1,5 +1,9 @@
-export function Poll(sequelize, DataTypes) {
-    const poll = sequelize.define('Poll', {
+import { DataTypes } from "sequelize";
+
+
+
+export const Poll = (sequelize) => {
+    const model = sequelize.define('Poll', {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -20,5 +24,5 @@ export function Poll(sequelize, DataTypes) {
         }
 
     });
-    return poll;
-};
+    return model;
+}

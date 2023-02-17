@@ -1,41 +1,43 @@
 import { Sequelize, DataTypes } from 'sequelize';
+import * as dotenv from 'dotenv';
 import { User } from './models/User.js';
 import { Poll } from './models/Poll.js';
 import { PollOption } from './models/PollOption.js';
 import { UserVote } from './models/UserVote.js';
-import * as dotenv from 'dotenv';
+
 dotenv.config();
 
-const sequelize = new Sequelize('metatron', 'postgres', process.env.PG_PASSWORD, {
+
+export const sequelize = new Sequelize('metatron', 'postgres', process.env.PG_PASSWORD, {
     host: 'localhost',
     dialect: 'postgres'
 });
 
 const MILLISECONDS_PER_MINUTE = 60000;
 const MILLISECONDS_PER_DAY = MILLISECONDS_PER_MINUTE * 86400;
-const models = {
-    User: User(sequelize, DataTypes),
-    Poll: Poll(sequelize, DataTypes),
-    PollOption: PollOption(sequelize, DataTypes),
-    UserVote: UserVote(sequelize, DataTypes)
-}
+
+const user = User(sequelize);
+const poll = Poll(sequelize);
+const pollOption = PollOption(sequelize);
+const userVote = UserVote(sequelize);
+
 //Set up associations between models
-models.User.hasMany(sequelize.models.UserVote);
-models.UserVote.belongsTo(sequelize.models.User);
+user.hasMany(sequelize.models.UserVote);
+userVote.belongsTo(sequelize.models.User);
 
-models.PollOption.hasMany(sequelize.models.UserVote);
-models.UserVote.belongsTo(sequelize.models.PollOption);
+pollOption.hasMany(sequelize.models.UserVote);
+userVote.belongsTo(sequelize.models.PollOption);
 
-models.Poll.hasMany(sequelize.models.PollOption);
-models.PollOption.belongsTo(sequelize.models.Poll);
+poll.hasMany(sequelize.models.PollOption);
+pollOption.belongsTo(sequelize.models.Poll);
 
 const syncModels = async () => {
-    await sequelize.sync({alter: true});
+    await sequelize.sync({ alter: true });
     sequelize.authenticate();
 };
 
 const importUser = async (displayName, userID) => {
-    const user = await models.User.create({
+    const user = await sequelize.models.User.create({
         display_name: displayName,
         user_id: userID,
         user_score: 0
@@ -43,7 +45,7 @@ const importUser = async (displayName, userID) => {
 };
 
 const incrementActivity = async (userID) => {
-    const user = await models.User.findAll({
+    const user = await sequelize.models.User.findAll({
         where: {
             user_id: userID
         }
@@ -51,7 +53,7 @@ const incrementActivity = async (userID) => {
 
     let newScore = user[0].dataValues.activity_score + calculateActivityIncrement(user[0].dataValues.braincells_lost);
 
-    await models.User.update({ activity_score: newScore }, {
+    await sequelize.models.User.update({ activity_score: newScore }, {
         where: {
             user_id: userID
         }
@@ -59,7 +61,7 @@ const incrementActivity = async (userID) => {
 }
 
 const incrementBraincells = async (userID, messageTime) => {
-    const user = await models.User.findAll({
+    const user = await sequelize.models.User.findAll({
         where: {
             user_id: userID
         }
@@ -70,7 +72,7 @@ const incrementBraincells = async (userID, messageTime) => {
     const newBraincells = user[0].dataValues.braincells_lost + 0.01;
 
     if (timeDifference > MILLISECONDS_PER_MINUTE) {
-        await models.User.update({ braincells_lost: newBraincells, last_message: messageTime }, {
+        await sequelize.models.User.update({ braincells_lost: newBraincells, last_message: messageTime }, {
             where: {
                 user_id: userID
             }
@@ -80,7 +82,7 @@ const incrementBraincells = async (userID, messageTime) => {
 }
 
 const getUser = async (userID) => {
-    const user = await models.User.findAll({
+    const user = await sequelize.models.User.findAll({
         where: {
             user_id: userID
         }
@@ -93,7 +95,7 @@ function calculateActivityIncrement(braincells) {
 }
 
 const checkDecrement = async (userID) => {
-    const user = await models.User.findAll({
+    const user = await sequelize.models.User.findAll({
         where: {
             user_id: userID
         }
@@ -105,7 +107,7 @@ const checkDecrement = async (userID) => {
 
     if (timeSinceLastPost > MILLISECONDS_PER_DAY) {
         const newScore = activity - activity * 0.05;
-        await models.User.update({ activity_score: newScore }, {
+        await sequelize.models.User.update({ activity_score: newScore }, {
             where: {
                 user_id: userID
             }

@@ -1,12 +1,15 @@
 
-export function UserVote(sequelize, DataTypes) {
-    const userVote = sequelize.define('UserVote', {
+import { DataTypes } from "sequelize";
+
+
+
+export const UserVote = (sequelize) => {
+    const model = sequelize.define('UserVote', {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true
         },
     });
-
-    return userVote;
-};
+    return model;
+}

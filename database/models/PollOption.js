@@ -1,6 +1,9 @@
-export function PollOption(sequelize, DataTypes) {
+import { DataTypes } from "sequelize";
 
-    const pollOption = sequelize.define('PollOption', {
+
+
+export const PollOption = (sequelize) => {
+    const model = sequelize.define('PollOption', {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -12,5 +15,5 @@ export function PollOption(sequelize, DataTypes) {
             allowNull: false
         }
     });
-    return pollOption;
+    return model;
 };

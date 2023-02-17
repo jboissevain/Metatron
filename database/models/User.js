@@ -1,6 +1,8 @@
 
-export function User(sequelize, DataTypes) {
-    const user = sequelize.define('User', {
+import { DataTypes } from "sequelize";
+
+export const User = (sequelize) => {
+    const model = sequelize.define('User', {
         display_name: {
             type: DataTypes.STRING,
             allowNull: false
@@ -25,5 +27,6 @@ export function User(sequelize, DataTypes) {
             defaultValue: 0
         }
     });
-    return user;
-};
+    return model;
+}
+
