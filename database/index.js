@@ -1,4 +1,11 @@
-const Sequelize = require('sequelize');
+import { Sequelize, DataTypes } from 'sequelize';
+import { User } from './models/User.js';
+import { Poll } from './models/Poll.js';
+import { PollOption } from './models/PollOption.js';
+import { UserVote } from './models/UserVote.js';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 const sequelize = new Sequelize('metatron', 'postgres', process.env.PG_PASSWORD, {
     host: 'localhost',
     dialect: 'postgres'
@@ -6,40 +13,29 @@ const sequelize = new Sequelize('metatron', 'postgres', process.env.PG_PASSWORD,
 
 const MILLISECONDS_PER_MINUTE = 60000;
 const MILLISECONDS_PER_DAY = MILLISECONDS_PER_MINUTE * 86400;
+const models = {
+    User: User(sequelize, DataTypes),
+    Poll: Poll(sequelize, DataTypes),
+    PollOption: PollOption(sequelize, DataTypes),
+    UserVote: UserVote(sequelize, DataTypes)
+}
+//Set up associations between models
+models.User.hasMany(sequelize.models.UserVote);
+models.UserVote.belongsTo(sequelize.models.User);
 
-const User = sequelize.define('user', {
-    display_name: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    user_id: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        primaryKey: true
-    },
-    braincells_lost: {
-        type: Sequelize.DOUBLE,
-        allowNull: false,
-        defaultValue: 0
-    },
-    last_message: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
-    },
-    activity_score: {
-        type: Sequelize.DOUBLE,
-        allowNull: false,
-        defaultValue: 0
-    }
-});
+models.PollOption.hasMany(sequelize.models.UserVote);
+models.UserVote.belongsTo(sequelize.models.PollOption);
+
+models.Poll.hasMany(sequelize.models.PollOption);
+models.PollOption.belongsTo(sequelize.models.Poll);
 
 const syncModels = async () => {
-    User.sync();
+    await sequelize.sync({alter: true});
     sequelize.authenticate();
-}
+};
 
 const importUser = async (displayName, userID) => {
-    const user = await User.create({
+    const user = await models.User.create({
         display_name: displayName,
         user_id: userID,
         user_score: 0
@@ -47,15 +43,15 @@ const importUser = async (displayName, userID) => {
 };
 
 const incrementActivity = async (userID) => {
-    const user = await User.findAll({
+    const user = await models.User.findAll({
         where: {
             user_id: userID
         }
-    })
+    });
 
     let newScore = user[0].dataValues.activity_score + calculateActivityIncrement(user[0].dataValues.braincells_lost);
 
-    await User.update({ activity_score: newScore }, {
+    await models.User.update({ activity_score: newScore }, {
         where: {
             user_id: userID
         }
@@ -63,7 +59,7 @@ const incrementActivity = async (userID) => {
 }
 
 const incrementBraincells = async (userID, messageTime) => {
-    const user = await User.findAll({
+    const user = await models.User.findAll({
         where: {
             user_id: userID
         }
@@ -74,18 +70,17 @@ const incrementBraincells = async (userID, messageTime) => {
     const newBraincells = user[0].dataValues.braincells_lost + 0.01;
 
     if (timeDifference > MILLISECONDS_PER_MINUTE) {
-        await User.update({ braincells_lost: newBraincells, last_message: messageTime}, {
+        await models.User.update({ braincells_lost: newBraincells, last_message: messageTime }, {
             where: {
                 user_id: userID
             }
         });
     }
-    
 
 }
 
 const getUser = async (userID) => {
-    const user = await User.findAll({
+    const user = await models.User.findAll({
         where: {
             user_id: userID
         }
@@ -98,19 +93,19 @@ function calculateActivityIncrement(braincells) {
 }
 
 const checkDecrement = async (userID) => {
-    const user = await User.findAll({
+    const user = await models.User.findAll({
         where: {
             user_id: userID
         }
     })
 
     const activity = user[0].dataValues.activity_score;
-    const newScore = activity - activity*0.05;
     const lastPost = user[0].dataValues.last_message;
     const timeSinceLastPost = Math.abs(Date.now() - lastPost);
 
-    if(timeSinceLastPost > MILLISECONDS_PER_DAY) {
-        await User.update({ activity_score: newScore }, {
+    if (timeSinceLastPost > MILLISECONDS_PER_DAY) {
+        const newScore = activity - activity * 0.05;
+        await models.User.update({ activity_score: newScore }, {
             where: {
                 user_id: userID
             }
@@ -121,7 +116,7 @@ const checkDecrement = async (userID) => {
 
 }
 
-module.exports = {
+export default {
     importUser,
     syncModels,
     incrementActivity,

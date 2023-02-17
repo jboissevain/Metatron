@@ -1,6 +1,6 @@
-const { Events } = require('discord.js');
+import { Events } from 'discord.js';
 
-module.exports = {
+export default {
 	name: Events.MessageCreate,
 	async execute(message, client) {
         const timePosted = new Date(message.createdTimestamp);

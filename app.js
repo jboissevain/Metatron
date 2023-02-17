@@ -1,8 +1,10 @@
-require('dotenv').config();
-const { Client, Collection, GatewayIntentBits } = require('discord.js');
-const cron = require('node-cron');
-const fs = require('node:fs');
-const path = require('node:path');
+import * as dotenv from 'dotenv';
+import { Client, Collection, GatewayIntentBits } from 'discord.js';
+import cron from 'node-cron';
+import fs from 'node:fs';
+import * as db from './database/index.js';
+
+dotenv.config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages] });
 
@@ -10,15 +12,18 @@ client.commands = new Collection();
 
 client.messages = new Collection();
 
-client.db = require('./database/database.js');
+client.db = db.default;
 client.db.syncModels();
 
-const commandsPath = path.join(__dirname, 'commands');
+
+//Import all commands
+const commandsPath = './commands';
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+    const filePath = commandsPath + '/' + file;
+    const {default: command} = await import(filePath);
+    
 
     if ('data' in command && 'execute' in command) {
         client.commands.set(command.data.name, command);
@@ -27,12 +32,14 @@ for (const file of commandFiles) {
     }
 }
 
-const eventsPath = path.join(__dirname, 'events');
+//Import all events
+const eventsPath = './events';
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
-    const filePath = path.join(eventsPath, file);
-    const event = require(filePath);
+    const filePath = eventsPath + '/' + file;
+    const {default: event} = await import(filePath);
+
     if (event.once) {
         client.once(event.name, (...args) => event.execute(...args, client));
     } else {
@@ -48,7 +55,7 @@ cron.schedule('* * * * *', () => {
         const guild = client.guilds.resolve(guildID);
         const members = await guild.members.fetch();
         members.forEach(async member => {
-            if(!member.user.bot) {
+            if (!member.user.bot) {
                 await client.db.checkDecrement(member.user.id);
             }
         })
