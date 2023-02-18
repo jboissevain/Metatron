@@ -86,7 +86,7 @@ const getUser = async (userID) => {
         where: {
             user_id: userID
         }
-    })
+    });
     return user[0];
 };
 
@@ -116,6 +116,14 @@ const checkDecrement = async (userID) => {
         await incrementActivity(userID);
     }
 
+}
+
+const createPoll = async (name, authorID, duration, options) => {
+    await sequelize.models.Poll.create({
+        poll_name: name,
+        open_date: Sequelize.NOW,
+        close_date: 
+    });
 };
 
 
@@ -125,5 +133,6 @@ export default {
     incrementActivity,
     incrementBraincells,
     getUser,
-    checkDecrement
+    checkDecrement,
+    createPoll,
 }
