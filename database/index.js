@@ -57,15 +57,15 @@ const incrementActivity = async (userID) => {
         where: {
             user_id: userID
         }
-    })
-}
+    });
+};
 
 const incrementBraincells = async (userID, messageTime) => {
     const user = await sequelize.models.User.findAll({
         where: {
             user_id: userID
         }
-    })
+    });
 
     const lastPost = user[0].dataValues.last_message;
     const timeDifference = Math.abs(messageTime - lastPost);
@@ -79,7 +79,7 @@ const incrementBraincells = async (userID, messageTime) => {
         });
     }
 
-}
+};
 
 const getUser = async (userID) => {
     const user = await sequelize.models.User.findAll({
@@ -88,18 +88,18 @@ const getUser = async (userID) => {
         }
     })
     return user[0];
-}
+};
 
 function calculateActivityIncrement(braincells) {
     return 1 + braincells;
-}
+};
 
 const checkDecrement = async (userID) => {
     const user = await sequelize.models.User.findAll({
         where: {
             user_id: userID
         }
-    })
+    });
 
     const activity = user[0].dataValues.activity_score;
     const lastPost = user[0].dataValues.last_message;
@@ -116,7 +116,11 @@ const checkDecrement = async (userID) => {
         await incrementActivity(userID);
     }
 
-}
+};
+
+const createPoll = async (userID) => {
+    
+};
 
 export default {
     importUser,
