@@ -9,7 +9,10 @@ export const Poll = (sequelize) => {
             autoIncrement: true,
             primaryKey: true
         },
-
+        author: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
         poll_name: {
             type: DataTypes.TEXT
         },

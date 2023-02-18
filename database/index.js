@@ -118,9 +118,6 @@ const checkDecrement = async (userID) => {
 
 };
 
-const createPoll = async (userID) => {
-    
-};
 
 export default {
     importUser,

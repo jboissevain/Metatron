@@ -15,7 +15,7 @@ export const User = (sequelize) => {
         braincells_lost: {
             type: DataTypes.DOUBLE,
             allowNull: false,
-            defaultValue: 0
+            defaultValue: 1
         },
         last_message: {
             type: DataTypes.DATE,
