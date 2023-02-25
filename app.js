@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { Client, Collection, GatewayIntentBits } from 'discord.js';
+import { Client, Collection, GatewayIntentBits, Events } from 'discord.js';
 import cron from 'node-cron';
 import fs from 'node:fs';
 import * as db from './database/index.js';
@@ -9,9 +9,6 @@ dotenv.config();
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages] });
 
 client.commands = new Collection();
-
-client.messages = new Collection();
-
 client.db = db.default;
 client.db.syncModels();
 
@@ -29,6 +26,19 @@ for (const file of commandFiles) {
         client.commands.set(command.data.name, command);
     } else {
         console.log(`command at ${filePath} is missing a required data or execute property`);
+    }
+}
+
+//Import all modals
+const modalsPath = commandsPath+'/modalSubmits';
+const modalFiles = fs.readdirSync(modalsPath).filter(file => file.endsWith('.js'));
+
+for (const file of modalFiles) {
+    const filePath = modalsPath + '/' + file;
+    const {default: modal} = await import(filePath);
+
+    if ('name' in modal && 'execute' in modal) {
+        client.on(Events.InteractionCreate, (...args) => {modal.execute(...args)});
     }
 }
 

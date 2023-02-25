@@ -7,6 +7,6 @@ export default {
     async execute(interaction) {
         const user = await interaction.client.db.getUser(interaction.user.id);
 
-        return `User ${user[0].dataValues.display_name} has lost ${user[0].dataValues.braincells_lost} braincells`;
+        interaction.reply(`User ${user.dataValues.display_name} has lost ${user.dataValues.braincells_lost} braincells`);
     },
 };

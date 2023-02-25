@@ -10,7 +10,7 @@ export const Poll = (sequelize) => {
             primaryKey: true
         },
         author: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         poll_name: {

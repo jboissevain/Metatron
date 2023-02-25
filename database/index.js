@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import { Sequelize, DataTypes, Op } from 'sequelize';
 import * as dotenv from 'dotenv';
 import { User } from './models/User.js';
 import { Poll } from './models/Poll.js';
@@ -7,14 +7,15 @@ import { UserVote } from './models/UserVote.js';
 
 dotenv.config();
 
-
+                             
 export const sequelize = new Sequelize('metatron', 'postgres', process.env.PG_PASSWORD, {
     host: 'localhost',
     dialect: 'postgres'
 });
 
 const MILLISECONDS_PER_MINUTE = 60000;
-const MILLISECONDS_PER_DAY = MILLISECONDS_PER_MINUTE * 86400;
+const MILLISECONDS_PER_HOUR = MILLISECONDS_PER_MINUTE * 60;
+const MILLISECONDS_PER_DAY = MILLISECONDS_PER_MINUTE * 3600;
 
 const user = User(sequelize);
 const poll = Poll(sequelize);
@@ -119,13 +120,53 @@ const checkDecrement = async (userID) => {
 }
 
 const createPoll = async (name, authorID, duration, options) => {
+
+    //Create the Poll itself
+    const close_date = new Date(new Date().getTime() + (duration * MILLISECONDS_PER_HOUR));
+
     await sequelize.models.Poll.create({
         poll_name: name,
-        open_date: Sequelize.NOW,
-        close_date: 
+        author: authorID,
+        open_date: new Date(),
+        close_date: close_date,
     });
+
+    //Get the just created Poll
+    const lastPoll = await sequelize.models.Poll.findAll({
+        where: {
+            poll_name: name
+        },
+        order: [
+            ['createdAt', 'DESC']
+        ]
+        
+    });
+
+    const lastPollKey = lastPoll[0].dataValues.id;
+
+    //Create Poll Options for each passed option, and associate them with the Poll.
+    for(const option of options) {
+        await sequelize.models.PollOption.create({
+            description: option,
+            pollID: lastPollKey
+        });
+    }
 };
 
+const getOpenPolls = async () => {
+    const pollResults = await sequelize.models.Poll.findAll({
+        where:{
+            close_date: {
+                [Op.gt]:Sequelize.NOW
+            }
+        }
+    });
+
+    for(const result of pollResults) {
+        console.log(result);
+    }
+
+};
 
 export default {
     importUser,
@@ -135,4 +176,5 @@ export default {
     getUser,
     checkDecrement,
     createPoll,
+    getOpenPolls,
 }
