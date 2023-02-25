@@ -1,4 +1,5 @@
 import { Sequelize, DataTypes, Op } from 'sequelize';
+
 import * as dotenv from 'dotenv';
 import { User } from './models/User.js';
 import { Poll } from './models/Poll.js';
@@ -148,25 +149,36 @@ const createPoll = async (name, authorID, duration, options) => {
     for(const option of options) {
         await sequelize.models.PollOption.create({
             description: option,
-            pollID: lastPollKey
+            PollId: lastPollKey
         });
     }
 };
 
 const getOpenPolls = async () => {
+    
     const pollResults = await sequelize.models.Poll.findAll({
         where:{
             close_date: {
-                [Op.gt]:Sequelize.NOW
+                [Op.gt]: new Date()
             }
         }
     });
+     
 
-    for(const result of pollResults) {
-        console.log(result);
-    }
+    return pollResults;
 
 };
+
+const getPollOptions = async (pollId) => {
+    const pollOptions = await sequelize.models.PollOption.findAll({
+        where: {
+            PollId: pollId
+        }
+    })
+
+    return pollOptions;
+
+}
 
 export default {
     importUser,
@@ -177,4 +189,5 @@ export default {
     checkDecrement,
     createPoll,
     getOpenPolls,
+    getPollOptions,
 }

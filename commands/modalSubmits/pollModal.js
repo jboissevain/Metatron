@@ -2,9 +2,9 @@
 export default {
 	name: 'pollModal',
 	async execute(interaction) {
-        console.log('modal execute');
 		if (!interaction.isModalSubmit()) return;
-
+        console.log('modal execute');
+        
         let options = []
         const pollName = interaction.fields.getTextInputValue('pollNameInput');
         const pollDuration = parseInt(interaction.fields.getTextInputValue('pollDurationInput'));
