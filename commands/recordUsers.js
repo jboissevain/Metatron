@@ -8,10 +8,10 @@ export default {
         const members = await interaction.guild.members.fetch();
         members.forEach(async member => {
             console.log(member.user.bot);
-            if(!member.user.bot){
-            await interaction.client.db.importUser(member.displayName, member.user.id);
+            if (!member.user.bot) {
+                await interaction.client.db.importUser(member.displayName, member.user.id);
             }
         })
-        
+
     }
 };

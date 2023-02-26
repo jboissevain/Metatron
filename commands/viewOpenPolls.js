@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ActionRowBuilder, Events, ModalBuilder, TextInputBuilder, TextInputStyle} from 'discord.js';
+import { SlashCommandBuilder, ActionRowBuilder, Events, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -8,7 +8,7 @@ export default {
         await interaction.deferReply();
         const polls = await interaction.client.db.getOpenPolls();
         let reply = '';
-        for(const poll of polls) {
+        for (const poll of polls) {
             const options = await interaction.client.db.getPollOptions(poll.dataValues.id);
             reply += `Poll: ${poll.dataValues.poll_name}
             

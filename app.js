@@ -19,8 +19,8 @@ const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('
 
 for (const file of commandFiles) {
     const filePath = commandsPath + '/' + file;
-    const {default: command} = await import(filePath);
-    
+    const { default: command } = await import(filePath);
+
 
     if ('data' in command && 'execute' in command) {
         client.commands.set(command.data.name, command);
@@ -30,15 +30,15 @@ for (const file of commandFiles) {
 }
 
 //Import all modals
-const modalsPath = commandsPath+'/modalSubmits';
+const modalsPath = commandsPath + '/modalSubmits';
 const modalFiles = fs.readdirSync(modalsPath).filter(file => file.endsWith('.js'));
 
 for (const file of modalFiles) {
     const filePath = modalsPath + '/' + file;
-    const {default: modal} = await import(filePath);
+    const { default: modal } = await import(filePath);
 
     if ('name' in modal && 'execute' in modal) {
-        client.on(Events.InteractionCreate, (...args) => {modal.execute(...args)});
+        client.on(Events.InteractionCreate, (...args) => { modal.execute(...args) });
     }
 }
 
@@ -48,7 +48,7 @@ const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'
 
 for (const file of eventFiles) {
     const filePath = eventsPath + '/' + file;
-    const {default: event} = await import(filePath);
+    const { default: event } = await import(filePath);
 
     if (event.once) {
         client.once(event.name, (...args) => event.execute(...args, client));

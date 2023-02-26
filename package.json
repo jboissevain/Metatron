@@ -11,6 +11,7 @@
     "author": "Jeremy",
     "license": "MIT",
     "dependencies": {
+        "ascii-table3": "^0.8.2",
         "discord-interactions": "^3.2.0",
         "discord.js": "^14.7.1",
         "dotenv": "^16.0.0",

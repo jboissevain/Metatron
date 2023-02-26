@@ -25,6 +25,6 @@ export default {
         }
         console.log(messages);
         interaction.reply(messages.length.toString());
-        
+
     }
 };

@@ -8,7 +8,7 @@ import { UserVote } from './models/UserVote.js';
 
 dotenv.config();
 
-                             
+
 export const sequelize = new Sequelize('metatron', 'postgres', process.env.PG_PASSWORD, {
     host: 'localhost',
     dialect: 'postgres'
@@ -96,6 +96,16 @@ function calculateActivityIncrement(braincells) {
     return 1 + braincells;
 };
 
+const getUsers = async () => {
+    const Users = await sequelize.models.User.findAll({
+        order: [
+            ['activity_score', 'DESC']
+        ]
+    })
+
+    return Users;
+};
+
 const checkDecrement = async (userID) => {
     const user = await sequelize.models.User.findAll({
         where: {
@@ -117,8 +127,7 @@ const checkDecrement = async (userID) => {
     } else {
         await incrementActivity(userID);
     }
-
-}
+};
 
 const createPoll = async (name, authorID, duration, options) => {
 
@@ -140,13 +149,13 @@ const createPoll = async (name, authorID, duration, options) => {
         order: [
             ['createdAt', 'DESC']
         ]
-        
+
     });
 
     const lastPollKey = lastPoll[0].dataValues.id;
 
     //Create Poll Options for each passed option, and associate them with the Poll.
-    for(const option of options) {
+    for (const option of options) {
         await sequelize.models.PollOption.create({
             description: option,
             PollId: lastPollKey
@@ -155,18 +164,16 @@ const createPoll = async (name, authorID, duration, options) => {
 };
 
 const getOpenPolls = async () => {
-    
     const pollResults = await sequelize.models.Poll.findAll({
-        where:{
+        where: {
             close_date: {
                 [Op.gt]: new Date()
             }
         }
     });
-     
+
 
     return pollResults;
-
 };
 
 const getPollOptions = async (pollId) => {
@@ -177,8 +184,8 @@ const getPollOptions = async (pollId) => {
     })
 
     return pollOptions;
-
 }
+
 
 export default {
     importUser,
@@ -190,4 +197,5 @@ export default {
     createPoll,
     getOpenPolls,
     getPollOptions,
+    getUsers,
 }

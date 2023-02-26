@@ -1,6 +1,6 @@
-import {SlashCommandBuilder} from 'discord.js';
+import { SlashCommandBuilder } from 'discord.js';
 
-export default  {
+export default {
     data: new SlashCommandBuilder()
         .setName('incrementactivity')
         .setDescription('increments the user\'s current activity score'),
