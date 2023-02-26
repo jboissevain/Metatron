@@ -1,10 +1,11 @@
 import { Sequelize, DataTypes, Op } from 'sequelize';
-
+import {Collection} from 'discord.js';
 import * as dotenv from 'dotenv';
 import { User } from './models/User.js';
 import { Poll } from './models/Poll.js';
 import { PollOption } from './models/PollOption.js';
 import { UserVote } from './models/UserVote.js';
+import { get } from 'http';
 
 dotenv.config();
 
@@ -52,14 +53,17 @@ const incrementActivity = async (userID) => {
             user_id: userID
         }
     });
-
-    let newScore = user[0].dataValues.activity_score + calculateActivityIncrement(user[0].dataValues.braincells_lost);
+    
+    let increase = calculateActivityIncrement(user[0].dataValues.braincells_lost);
+    let newScore = user[0].dataValues.activity_score + increase;
 
     await sequelize.models.User.update({ activity_score: newScore }, {
         where: {
             user_id: userID
         }
     });
+
+    return increase;
 };
 
 const incrementBraincells = async (userID, messageTime) => {
@@ -116,17 +120,20 @@ const checkDecrement = async (userID) => {
     const activity = user[0].dataValues.activity_score;
     const lastPost = user[0].dataValues.last_message;
     const timeSinceLastPost = Math.abs(Date.now() - lastPost);
+    let userGain = 0;
 
     if (timeSinceLastPost > MILLISECONDS_PER_DAY) {
-        const newScore = activity - activity * 0.05;
+        const newScore = activity * 0.95;
         await sequelize.models.User.update({ activity_score: newScore }, {
             where: {
                 user_id: userID
             }
         })
+        userGain = newScore - activity;
     } else {
-        await incrementActivity(userID);
+        userGain = await incrementActivity(userID);
     }
+    return userGain;
 };
 
 const createPoll = async (name, authorID, duration, options) => {
@@ -186,6 +193,50 @@ const getPollOptions = async (pollId) => {
     return pollOptions;
 }
 
+const getUnvotedPolls = async (userId) => {
+
+    const openPolls = await getOpenPolls();
+    let pollIds = [];
+
+    openPolls.forEach(poll => {
+        pollIds.push(poll.dataValues.id);
+    })
+    
+    //Open PollOptions to match UserVotes
+    const pollOptions = await sequelize.models.PollOption.findAll({
+        where:{
+            PollId: pollIds
+        }
+    });
+
+    let pollOptionIds = [];
+    pollOptions.forEach(option => {
+        pollOptionIds.push(option.dataValues.id);
+    });
+
+    //Already submitted votes on currently open polls
+    const userVotes = await sequelize.models.UserVote.findAll({
+        where: {
+            PollOptionId: pollOptionIds,
+            UserUserId: userId
+        }
+    });
+
+    let votedOptionIds = [];
+    userVotes.forEach(vote => {
+        votedOptionIds.push(vote.dataValues.PollOptionId);
+    });
+
+    const unvotedOptions = pollOptions.filter(option => !votedOptionIds.includes(option.dataValues.id));
+
+
+    let unvotedPollIds = new Set()
+    for(const unvotedOption of unvotedOptions) {
+        unvotedPollIds.add(unvotedOption.dataValues.PollId);
+    }
+
+    return openPolls.filter(openPoll => unvotedPollIds.has(openPoll.dataValues.id));
+}
 
 export default {
     importUser,
@@ -198,4 +249,6 @@ export default {
     getOpenPolls,
     getPollOptions,
     getUsers,
+    getUnvotedPolls,
+
 }

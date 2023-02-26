@@ -1,9 +1,10 @@
-import { SlashCommandBuilder, ActionRowBuilder, Events, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { SlashCommandBuilder, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, PermissionFlagsBits } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('makepoll')
-        .setDescription('Create a poll and define the options'),
+        .setDescription('Create a poll and define the options')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
         const modal = new ModalBuilder()
             .setCustomId('pollModal')

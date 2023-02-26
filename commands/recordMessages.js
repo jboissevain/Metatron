@@ -1,9 +1,10 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits  } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('recordmessages')
-        .setDescription('records all messages in a single channel and replies with the length'),
+        .setDescription('records all messages in a single channel and replies with the length')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
         const channel = interaction.channel;
         let messages = [];

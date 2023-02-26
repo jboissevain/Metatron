@@ -6,21 +6,27 @@ export default {
         .setDescription('View the currently open polls'),
     async execute(interaction) {
         await interaction.deferReply();
-        const polls = await interaction.client.db.getOpenPolls();
-        let reply = '';
-        for (const poll of polls) {
-            const options = await interaction.client.db.getPollOptions(poll.dataValues.id);
-            reply += `Poll: ${poll.dataValues.poll_name}
-            
-Closing Date: ${poll.dataValues.close_date} 
+        const polls = await interaction.client.db.getOpenPolls(interaction.user.id);
+        console.log(polls);
+        var table = new AsciiTable3();
+        table.setHeading('Poll', 'Close Date', 'Option 1', 'Option 2');
+        table.setWidths([20,20,30,30])
+        table.setWrappings([true, true, true, true])
+        let items = [];
 
-Option 1: ${options[0].dataValues.description}
-
-Option 2: ${options[1].dataValues.description}
-            
-            `
+        for(const poll of polls) {
+            const pollOptions = await interaction.client.db.getPollOptions(poll.dataValues.id);
+            const row = [
+                        poll.dataValues.poll_name,
+                        poll.dataValues.close_date,
+                        pollOptions[0].dataValues.description,
+                        pollOptions[1].dataValues.description
+                        ];
+            items.push(row);
         }
 
+        table.addRowMatrix(items);
+        const reply = `\`\`\`${table.toString()}\`\`\``;
         await interaction.editReply(reply);
     }
 };

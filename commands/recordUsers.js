@@ -1,9 +1,10 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits  } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('recordusers')
-        .setDescription('imports all users in the server into the database'),
+        .setDescription('imports all users in the server into the database')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
         const members = await interaction.guild.members.fetch();
         members.forEach(async member => {

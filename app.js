@@ -66,7 +66,8 @@ cron.schedule('* * * * *', () => {
         const members = await guild.members.fetch();
         members.forEach(async member => {
             if (!member.user.bot) {
-                await client.db.checkDecrement(member.user.id);
+                const userGain = await client.db.checkDecrement(member.user.id);
+                client.channels.cache.get('1079444374053720065').send(`${member.displayName} has ${userGain > 0 ? 'gained': 'lost'} ${userGain} activity score`);
             }
         })
     })

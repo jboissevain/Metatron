@@ -8,8 +8,8 @@ export default {
         await interaction.deferReply();
         const users = await interaction.client.db.getUsers();
         var table = new AsciiTable3();
-        table.setHeading('Rank', 'Name', 'Activity Score', 'Percentage of total score')
-        let items = []
+        table.setHeading('Rank', 'Name', 'Activity Score', 'Braincells Lost', 'Percentage of total')
+        let items = [];
         let rank = 1;
         let pointsTotal = 0;
         users.forEach(user => {
@@ -17,7 +17,13 @@ export default {
         });
 
         for (const user of users) {
-            const row = [rank, user.dataValues.display_name, user.dataValues.activity_score.toFixed(3), `${((user.dataValues.activity_score / pointsTotal) * 100).toFixed(2)}%`]
+            const row = [
+                rank, 
+                user.dataValues.display_name,
+                user.dataValues.activity_score.toFixed(3),
+                user.dataValues.braincells_lost.toFixed(2),
+                `${((user.dataValues.activity_score / pointsTotal) * 100).toFixed(2)}%`
+            ]
             items.push(row);
             rank += 1;
         }
