@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, ActionRowBuilder, Events, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { AsciiTable3 } from 'ascii-table3';
 
 export default {
     data: new SlashCommandBuilder()

@@ -5,10 +5,12 @@ export default {
         .setName('vote')
         .setDescription('vote on open polls'),
     async execute(interaction) {
-        await interaction.deferReply();
-        const polls = await interaction.client.db.getUnvotedPolls(interaction.user.id);
+
+        await interaction.deferReply({ephemeral:true});
+        let polls = await interaction.client.db.getUnvotedPolls(interaction.user.id);
         let rows = [];
 
+        polls = polls.slice(0,5);//Can only fit 5 action rows in the modal, only show the first 5 unvoted polls
         for (const poll of polls) {
             const pollOptions = await interaction.client.db.getPollOptions(poll.dataValues.id);
             const row = new ActionRowBuilder().addComponents(
@@ -17,20 +19,19 @@ export default {
                         .setPlaceholder(poll.dataValues.poll_name)
                         .addOptions (
                             {
-                                label: 'Option 1',
-                                description: pollOptions[0].dataValues.setDescription,
+                                label: pollOptions[0].dataValues.description,
                                 value: pollOptions[0].dataValues.id.toString()
                             },
                             {
-                                label: 'Option 2',
-                                description: pollOptions[1].dataValues.setDescription,
+                                label: pollOptions[0].dataValues.description,
                                 value: pollOptions[1].dataValues.id.toString()
                             },
                         ),
             );
             rows.push(row);
         }
+        interaction.editReply({content:'Vote on these polls', components: rows });
 
-        await interaction.showModal(modal);
+        
     },
 };
